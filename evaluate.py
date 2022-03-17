@@ -139,7 +139,7 @@ def add_args(parser):
     parser.add_argument("--model_dir", type=str, default='saved_models', help='directory to save fine-tuned models')
     parser.add_argument("--summary_dir", type=str, default='tensorboard', help='directory to save tensorboard summary')
     parser.add_argument("--cache_path", type=str, default='cache')
-    parser.add_argument("--data_num", type=int, default=8, help='number of data instances to use, -1 for full data')
+    parser.add_argument("--data_num", type=int, default=-1, help='number of data instances to use, -1 for full data')
     parser.add_argument("--gpu", type=int, default=0, help='index of the gpu to use in a cluster')
     parser.add_argument("--lang", type=str, default='python')
     parser.add_argument("--data_dir", type=str, default='data')
