@@ -100,7 +100,10 @@ def add_args(parser):
     args = parser.parse_args()
 
     if args.task in ['summarize']:
-        args.lang = args.sub_task
+        if args.sub_task == 'pytorch':
+            args.lang = 'python'
+        else:
+            args.lang = args.sub_task
     elif args.task in ['refine', 'concode', 'clone']:
         args.lang = 'java'
     elif args.task == 'defect':
