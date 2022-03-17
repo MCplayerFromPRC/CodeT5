@@ -78,9 +78,9 @@ def eval_bleu_epoch(args, eval_data, eval_examples, model, tokenizer, split_tag,
 
     pred_nls = [tokenizer.decode(id, skip_special_tokens=True, clean_up_tokenization_spaces=False) for id in pred_ids]
 
-    output_fn = os.path.join(args.res_dir, "test_{}.output".format(criteria))
-    gold_fn = os.path.join(args.res_dir, "test_{}.gold".format(criteria))
-    src_fn = os.path.join(args.res_dir, "test_{}.src".format(criteria))
+    output_fn = os.path.join(args.res_dir, "{}_test_{}.output".format(args.dataset, criteria))
+    gold_fn = os.path.join(args.res_dir, "{}_test_{}.gold".format(args.dataset, criteria))
+    src_fn = os.path.join(args.res_dir, "{}_test_{}.src".format(args.dataset, criteria))
 
     if args.task in ['defect']:
         target_dict = {0: 'false', 1: 'true'}
@@ -134,7 +134,7 @@ def add_args(parser):
                         choices=['roberta', 'codebert', 'bart_base', 'codet5_small', 'codet5_base'])
     parser.add_argument("--task", type=str, default='summarize', choices=['summarize', 'concode', 'translate',
                                                                           'refine', 'defect', 'clone', 'multi_task'])
-    parser.add_argument("--sub_task", type=str, default='python')
+    parser.add_argument("--sub_task", type=str, default='pytorch')
     parser.add_argument("--res_dir", type=str, default='results', help='directory to save fine-tuning results')
     parser.add_argument("--model_dir", type=str, default='saved_models', help='directory to save fine-tuned models')
     parser.add_argument("--summary_dir", type=str, default='tensorboard', help='directory to save tensorboard summary')
@@ -154,26 +154,26 @@ def add_args(parser):
                         help="Path to pre-trained model: e.g. roberta-base")
     parser.add_argument("--output_dir", default='results', type=str,
                         help="The output directory where the model predictions and checkpoints will be written.")
-    parser.add_argument("--load_model_path", default="finetuned_models/summarize_python_codet5_base.bin", type=str,
+    parser.add_argument("--load_model_path", default='saved_models/summarize/pytorch/codet5_base_all_lr5_bs48_src256_trg128_pat2_e15/checkpoint-best-bleu/pytorch_model.bin', type=str,
                         help="Path to trained model: Should contain the .bin files")
     ## Other parameters
     parser.add_argument("--train_filename", default=None, type=str,
                         help="The train filename. Should contain the .jsonl files for this task.")
     parser.add_argument("--dev_filename", default=None, type=str,
                         help="The dev filename. Should contain the .jsonl files for this task.")
-    parser.add_argument("--test_filename", default=None, type=str,
+    parser.add_argument("--test_filename", default='data/dataset/output.jsonl', type=str,
                         help="The test filename. Should contain the .jsonl files for this task.")
-    parser.add_argument("--dataset", default='dataset', type=str,
+    parser.add_argument("--dataset", default='pytorch', type=str,
                         help="cache file name")
 
     parser.add_argument("--config_name", default="Salesforce/codet5-base", type=str,
                         help="Pretrained config name or path if not the same as model_name")
     parser.add_argument("--tokenizer_name", default="Salesforce/codet5-base", type=str,
                         help="Pretrained tokenizer name or path if not the same as model_name")
-    parser.add_argument("--max_source_length", default=256, type=int,
+    parser.add_argument("--max_source_length", default=512, type=int,
                         help="The maximum total source sequence length after tokenization. Sequences longer "
                              "than this will be truncated, sequences shorter will be padded.")
-    parser.add_argument("--max_target_length", default=128, type=int,
+    parser.add_argument("--max_target_length", default=256, type=int,
                         help="The maximum total target sequence length after tokenization. Sequences longer "
                              "than this will be truncated, sequences shorter will be padded.")
 
@@ -186,7 +186,7 @@ def add_args(parser):
     parser.add_argument("--no_cuda", action='store_true',
                         help="Avoid using CUDA when available")
 
-    parser.add_argument("--eval_batch_size", default=8, type=int,
+    parser.add_argument("--eval_batch_size", default=4, type=int,
                         help="Batch size per GPU/CPU for evaluation.")
 
     parser.add_argument("--beam_size", default=10, type=int,
@@ -210,7 +210,6 @@ def main():
     set_dist(args)
     set_seed(args)
     config, model, tokenizer = build_or_load_gen_model(args)
-    model.load_state_dict(torch.load(args.load_model_path))
     model.to(args.device)
 
     pool = multiprocessing.Pool(args.cpu_cont)

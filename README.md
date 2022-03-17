@@ -223,3 +223,7 @@ If you want to fine-tune on your dataset, you can add your own task and sub_task
 
 Please create a GitHub issue if you have any questions, suggestions, requests or bug-reports. We welcome PRs!
 
+## Fine-tune on pytorch dataset
+```
+CUDA_VISIBLE_DEVICES=0 python /remote-home/cchang/project/CodeT5/run_gen.py --do_train --do_eval --do_eval_bleu --do_test --task summarize --sub_task pytorch --model_type codet5 --data_num -1 --num_train_epochs 30 --warmup_steps 1000 --learning_rate 3e-5 --patience 2 --tokenizer_name=Salesforce/codet5-base --model_name_or_path=/remote-home/cchang/project/CodeT5/pretrained_models/codet5_base/ --data_dir /remote-home/cchang/project/CodeT5/data --cache_path saved_models/summarize/pytorch/codet5_base_all_lr5_bs48_src256_trg128_pat2_e15/cache_data --output_dir saved_models/summarize/pytorch/codet5_base_all_lr5_bs48_src256_trg128_pat2_e15 --summary_dir tensorboard --save_last_checkpoints --always_save_model --res_dir saved_models/summarize/pytorch/codet5_base_all_lr5_bs48_src256_trg128_pat2_e15/prediction --res_fn results/summarize_codet5_base.txt --train_batch_size 4 --gradient_accumulation_steps 12 --eval_batch_size 4 --max_source_length 512 --max_target_length 256 2>&1 | tee saved_models/summarize/pytorch/codet5_base_all_lr5_bs48_src256_trg128_pat2_e15/train.log
+```
