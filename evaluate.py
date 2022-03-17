@@ -139,7 +139,7 @@ def add_args(parser):
     parser.add_argument("--model_dir", type=str, default='saved_models', help='directory to save fine-tuned models')
     parser.add_argument("--summary_dir", type=str, default='tensorboard', help='directory to save tensorboard summary')
     parser.add_argument("--cache_path", type=str, default='cache')
-    parser.add_argument("--data_num", type=int, default=-1, help='number of data instances to use, -1 for full data')
+    parser.add_argument("--data_num", type=int, default=8, help='number of data instances to use, -1 for full data')
     parser.add_argument("--gpu", type=int, default=0, help='index of the gpu to use in a cluster')
     parser.add_argument("--lang", type=str, default='python')
     parser.add_argument("--data_dir", type=str, default='data')
@@ -161,8 +161,10 @@ def add_args(parser):
                         help="The train filename. Should contain the .jsonl files for this task.")
     parser.add_argument("--dev_filename", default=None, type=str,
                         help="The dev filename. Should contain the .jsonl files for this task.")
-    parser.add_argument("--test_filename", default=None, type=str,
+    parser.add_argument("--test_filename", default='data/dataset/output.jsonl', type=str,
                         help="The test filename. Should contain the .jsonl files for this task.")
+    parser.add_argument("--dataset", default='dataset', type=str,
+                        help="cache file name")
 
     parser.add_argument("--config_name", default="Salesforce/codet5-base", type=str,
                         help="Pretrained config name or path if not the same as model_name")
@@ -212,14 +214,16 @@ def main():
     model.to(args.device)
 
     pool = multiprocessing.Pool(args.cpu_cont)
-    args.train_filename, args.dev_filename, args.test_filename = get_filenames(args.data_dir, args.task, args.sub_task)
+    if args.test_filename is None or args.test_filename.strip() == '':
+        _, _, args.test_filename = get_filenames(args.data_dir, args.task, args.sub_task)
+
     fa = open(os.path.join(args.output_dir, 'summary.log'), 'a+')
 
     if args.do_test:
         logger.info("  " + "***** Testing *****")
         logger.info("  Batch size = %d", args.eval_batch_size)
 
-        eval_examples, eval_data = load_and_cache_gen_data(args, args.test_filename, pool, tokenizer, 'test',
+        eval_examples, eval_data = load_and_cache_gen_data(args, args.test_filename, pool, tokenizer, f'{args.dataset}_test',
                                                            only_src=True, is_sample=False)
         result = eval_bleu_epoch(args, eval_data, eval_examples, model, tokenizer, 'test', 'best-bleu')
         test_bleu, test_em = result['bleu'], result['em']
